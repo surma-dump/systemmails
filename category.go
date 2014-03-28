@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strconv"
@@ -60,8 +61,7 @@ func CategoryListHandler(w http.ResponseWriter, r *http.Request) {
 	container["result"] = result
 
 	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	enc.Encode(container)
+	json.NewEncoder(w).Encode(container)
 }
 
 func CategoryCreateHandler(w http.ResponseWriter, r *http.Request) {
@@ -92,46 +92,45 @@ func CategoryCreateHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-/*
-func (mcs *MgoCollectionServer) GetHandler(w http.ResponseWriter, r *http.Request) {
-	pathElems := strings.Split(r.URL.Path, "/")
-	id := pathElems[len(pathElems)-1]
-
-	var result interface{}
-	if err := mcs.Collection.FindId(id).One(&result); err != nil {
+func CategoryGetHandler(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	result := Category{}
+	if err := db.C(CATEGORY_COLLECTION).FindId(bson.ObjectIdHex(id)).One(&result); err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	enc.Encode(result)
+	json.NewEncoder(w).Encode(result)
 }
 
-func (mcs *MgoCollectionServer) PutHandler(w http.ResponseWriter, r *http.Request) {
-	pathElems := strings.Split(r.URL.Path, "/")
-	id := pathElems[len(pathElems)-1]
+func CategoryUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
 
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	var payload interface{}
+	payload := Category{}
 	if err := dec.Decode(&payload); err != nil {
 		http.Error(w, "Bad Request (invalid payload)", http.StatusBadRequest)
 		return
 	}
-	if mcs.Validate != nil {
-		if err := mcs.Validate(payload); err != nil {
-			http.Error(w, "Bad Request (validation failed)", http.StatusBadRequest)
-			return
-		}
-	}
-
-	if err := mcs.Collection.UpdateId(id, payload); err != nil {
+	payload.ID = bson.ObjectIdHex(id)
+	if err := db.C(CATEGORY_COLLECTION).UpdateId(payload.ID, payload); err != nil {
 		log.Printf("Could not update value: %s", err)
 		http.Error(w, "Internal server error (could not update value)", http.StatusInternalServerError)
 		return
 	}
 	http.Error(w, "", http.StatusNoContent)
 }
-*/
+
+func CategoryDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+
+	if err := db.C(CATEGORY_COLLECTION).RemoveId(bson.ObjectIdHex(id)); err != nil {
+		log.Printf("Could not remove value: %s", err)
+		http.Error(w, "Internal server error (could not remove value)", http.StatusInternalServerError)
+		return
+	}
+	http.Error(w, "", http.StatusNoContent)
+}

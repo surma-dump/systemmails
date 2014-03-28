@@ -34,9 +34,9 @@ func main() {
 	categoryRouter := r.PathPrefix("/category").Subrouter()
 	categoryRouter.Path("").Methods("GET").HandlerFunc(CategoryListHandler)
 	categoryRouter.Path("").Methods("PUT").HandlerFunc(CategoryCreateHandler)
-	// categoryRouter.Path("/{id}").Methods("GET").HandlerFunc(CategoryGetHandler)
-	// categoryRouter.Path("/{id}").Methods("PUT").HandlerFunc(CategoryUpdateHandler)
-	// categoryRouter.Path("/{id}").Methods("DELETE").HandlerFunc(CategoryDeleteHandler)
+	categoryRouter.Path("/{id}").Methods("GET").HandlerFunc(CategoryGetHandler)
+	categoryRouter.Path("/{id}").Methods("PUT").HandlerFunc(CategoryUpdateHandler)
+	categoryRouter.Path("/{id}").Methods("DELETE").HandlerFunc(CategoryDeleteHandler)
 	categoryRouter.Path("/{id}/mails").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = "/mail"
 		r.URL.RawQuery = "?filter=category:" + mux.Vars(r)["id"]
