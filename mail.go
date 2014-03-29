@@ -101,13 +101,22 @@ func MailUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	payload := Category{}
+	payload := Mail{}
 	if err := dec.Decode(&payload); err != nil {
 		http.Error(w, "Bad Request (invalid payload)", http.StatusBadRequest)
 		return
 	}
 	payload.ID = bson.ObjectIdHex(id)
-	if err := db.C(MAIL_COLLECTION).UpdateId(payload.ID, payload); err != nil {
+	err := db.C(MAIL_COLLECTION).UpdateId(payload.ID, bson.M{
+		"$set": bson.M{
+			"name":     payload.Name,
+			"category": payload.Category,
+			"subject":  payload.Subject,
+			"body":     payload.Body,
+			"mtime":    time.Now(),
+		},
+	})
+	if err != nil {
 		log.Printf("Could not update value: %s", err)
 		http.Error(w, "Internal server error (could not update value)", http.StatusInternalServerError)
 		return
@@ -118,7 +127,13 @@ func MailUpdateHandler(w http.ResponseWriter, r *http.Request) {
 func MailDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	if err := db.C(MAIL_COLLECTION).RemoveId(bson.ObjectIdHex(id)); err != nil {
+	err := db.C(MAIL_COLLECTION).UpdateId(bson.ObjectIdHex(id), bson.M{
+		"$set": bson.M{
+			"mtime":  time.Now(),
+			"status": "deleted",
+		},
+	})
+	if err != nil {
 		log.Printf("Could not remove value: %s", err)
 		http.Error(w, "Internal server error (could not remove value)", http.StatusInternalServerError)
 		return

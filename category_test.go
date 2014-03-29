@@ -172,7 +172,6 @@ func TestCategoryDeleteHandler(t *testing.T) {
 	if rr.Code != http.StatusNoContent {
 		t.Fatalf("Unexpected status code %d", rr.Code)
 	}
-	dataSet[0].Name = "NewName"
 
 	data := []Category{}
 	if err := c.Find(bson.M{}).All(&data); err != nil {
