@@ -8,25 +8,10 @@ import (
 	"reflect"
 	"testing"
 
-	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 )
 
-func init() {
-	session, err := mgo.Dial("localhost")
-	if err != nil {
-		panic(err)
-	}
-	db = session.DB("")
-}
-
-type categoryResult struct {
-	Offset int        `json:"offset"`
-	Count  int        `json:"count"`
-	Result []Category `json:"result"`
-}
-
-func TestCategoryCreateHandler(t *testing.T) {
+func TestMailCreateHandler(t *testing.T) {
 	c := db.C(CATEGORY_COLLECTION)
 	defer c.DropCollection()
 
@@ -56,7 +41,7 @@ func TestCategoryCreateHandler(t *testing.T) {
 	}
 }
 
-func TestCategoryGetHandler(t *testing.T) {
+func TestMailGetHandler(t *testing.T) {
 	c := db.C(CATEGORY_COLLECTION)
 	defer c.DropCollection()
 
@@ -93,7 +78,7 @@ func TestCategoryGetHandler(t *testing.T) {
 	}
 }
 
-func TestCategoryUpdateHandler(t *testing.T) {
+func TestMailUpdateHandler(t *testing.T) {
 	c := db.C(CATEGORY_COLLECTION)
 	defer c.DropCollection()
 
@@ -135,7 +120,7 @@ func TestCategoryUpdateHandler(t *testing.T) {
 	}
 }
 
-func TestCategoryDeleteHandler(t *testing.T) {
+func TestMailDeleteHandler(t *testing.T) {
 	c := db.C(CATEGORY_COLLECTION)
 	defer c.DropCollection()
 
