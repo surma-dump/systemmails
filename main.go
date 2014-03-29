@@ -46,9 +46,9 @@ func main() {
 
 	mailRouter := r.PathPrefix("/mail").Subrouter()
 	mailRouter.Path("").Methods("GET").HandlerFunc(MailListHandler)
-	// mailRouter.Path("").Methods("PUT").HandlerFunc(CategoryCreateHandler)
-	// mailRouter.Path("/{id}").Methods("GET").HandlerFunc(CategoryGetHandler)
-	// mailRouter.Path("/{id}").Methods("PUT").HandlerFunc(CategoryUpdateHandler)
+	mailRouter.Path("").Methods("PUT").HandlerFunc(MailCreateHandler)
+	mailRouter.Path("/{id}").Methods("GET").HandlerFunc(MailGetHandler)
+	mailRouter.Path("/{id}").Methods("PUT").HandlerFunc(MailUpdateHandler)
 	// mailRouter.Path("/{id}").Methods("DELETE").HandlerFunc(CategoryDeleteHandler)
 
 	log.Printf("Starting webserver on %s...", options.Listen)

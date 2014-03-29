@@ -96,95 +96,73 @@ func TestMailGetHandler(t *testing.T) {
 	}
 }
 
-/*
 func TestMailUpdateHandler(t *testing.T) {
-	c := db.C(CATEGORY_COLLECTION)
+	c := db.C(MAIL_COLLECTION)
 	defer c.DropCollection()
-
-	dataSet := []Category{
-		{
-			ID:   bson.NewObjectId(),
-			Name: "Name0",
-		},
-		{
-			ID:   bson.NewObjectId(),
-			Name: "Name1",
-		},
-	}
-
-	for _, d := range dataSet {
-		if err := c.Insert(d); err != nil {
-			t.Fatalf("Could not insert test data: %s", err)
-		}
-	}
+	dataSet := insertMailTestData(c)
 
 	r := mux.NewRouter()
-	r.HandleFunc("/category/{id}", CategoryUpdateHandler)
+	r.HandleFunc("/mail/{id}", MailUpdateHandler)
 
 	rr := httptest.NewRecorder()
-	req := mustRequest("PUT", "http://host/category/"+dataSet[0].ID.Hex(), `{"name":"NewName"}`)
+	req := mustRequest("PUT", "http://host/mail/"+dataSet[0].ID.Hex(), `
+		{
+			"name":"NewName",
+			"category": ["tag0"],
+			"subject": "NewSubject",
+			"body": "NewBody"
+		}`)
 	r.ServeHTTP(rr, req)
 	if rr.Code != http.StatusNoContent {
 		t.Fatalf("Unexpected status code %d", rr.Code)
 	}
-	dataSet[0].Name = "NewName"
+	expectedData := dataSet[0]
+	expectedData.Name = "NewName"
+	expectedData.Category = []string{"tag0"}
+	expectedData.Subject = "NewSubject"
+	expectedData.Body = "NewBody"
 
-	data := []Category{}
-	if err := c.Find(bson.M{}).All(&data); err != nil {
+	data := Mail{}
+	if err := c.FindId(expectedData.ID).One(&data); err != nil {
 		t.Fatalf("Could not get data: %s", err)
 	}
+	// Ignore mtime
+	expectedData.Mtime = data.Mtime
 
-	if !reflect.DeepEqual(data, dataSet) {
+	if !reflect.DeepEqual(data, expectedData) {
 		t.Fatalf("Unexpected data: %#v", data)
 	}
 }
 
 func TestMailDeleteHandler(t *testing.T) {
-	c := db.C(CATEGORY_COLLECTION)
+	c := db.C(MAIL_COLLECTION)
 	defer c.DropCollection()
 
-	dataSet := []Category{
-		{
-			ID:   bson.NewObjectId(),
-			Name: "Name0",
-		},
-		{
-			ID:   bson.NewObjectId(),
-			Name: "Name1",
-		},
-		{
-			ID:   bson.NewObjectId(),
-			Name: "Name2",
-		},
-	}
-
-	for _, d := range dataSet {
-		if err := c.Insert(d); err != nil {
-			t.Fatalf("Could not insert test data: %s", err)
-		}
-	}
+	dataSet := insertMailTestData(c)
 
 	r := mux.NewRouter()
-	r.HandleFunc("/category/{id}", CategoryDeleteHandler)
+	r.HandleFunc("/mail/{id}", MailDeleteHandler)
 
 	rr := httptest.NewRecorder()
-	req := mustRequest("DELETE", "http://host/category/"+dataSet[0].ID.Hex(), "")
+	req := mustRequest("DELETE", "http://host/mail/"+dataSet[0].ID.Hex(), "")
 	r.ServeHTTP(rr, req)
 	if rr.Code != http.StatusNoContent {
 		t.Fatalf("Unexpected status code %d", rr.Code)
 	}
-	dataSet[0].Name = "NewName"
 
-	data := []Category{}
-	if err := c.Find(bson.M{}).All(&data); err != nil {
+	expectedData := dataSet[0]
+	data := Mail{}
+	if err := c.FindId(expectedData.ID).One(&data); err != nil {
 		t.Fatalf("Could not get data: %s", err)
 	}
+	// Ignore mtime
+	expectedData.Mtime = data.Mtime
+	expectedData.Status = "deleted"
 
-	if !reflect.DeepEqual(data, dataSet[1:]) {
+	if !reflect.DeepEqual(data, expectedData) {
 		t.Fatalf("Unexpected data: %#v", data)
 	}
 }
-*/
 
 func insertMailTestData(c *mgo.Collection) []Mail {
 	// MongoDB doesnt store Nanoseconds
