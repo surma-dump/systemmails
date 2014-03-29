@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
@@ -63,18 +64,7 @@ func TestCategoryGetHandler(t *testing.T) {
 	c := db.C(CATEGORY_COLLECTION)
 	defer c.DropCollection()
 
-	dataSet := []Category{
-		{
-			ID:   bson.NewObjectId(),
-			Name: "Name1",
-		},
-	}
-
-	for _, d := range dataSet {
-		if err := c.Insert(d); err != nil {
-			t.Fatalf("Could not insert test data: %s", err)
-		}
-	}
+	dataSet := insertCategoryTestData(c)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/category/{id}", CategoryGetHandler)
@@ -100,22 +90,7 @@ func TestCategoryUpdateHandler(t *testing.T) {
 	c := db.C(CATEGORY_COLLECTION)
 	defer c.DropCollection()
 
-	dataSet := []Category{
-		{
-			ID:   bson.NewObjectId(),
-			Name: "Name0",
-		},
-		{
-			ID:   bson.NewObjectId(),
-			Name: "Name1",
-		},
-	}
-
-	for _, d := range dataSet {
-		if err := c.Insert(d); err != nil {
-			t.Fatalf("Could not insert test data: %s", err)
-		}
-	}
+	dataSet := insertCategoryTestData(c)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/category/{id}", CategoryUpdateHandler)
@@ -142,6 +117,25 @@ func TestCategoryDeleteHandler(t *testing.T) {
 	c := db.C(CATEGORY_COLLECTION)
 	defer c.DropCollection()
 
+	dataSet := insertCategoryTestData(c)
+
+	r := mux.NewRouter()
+	r.HandleFunc("/category/{id}", CategoryDeleteHandler)
+
+	rr := httptest.NewRecorder()
+	req := mustRequest("DELETE", "http://host/category/"+dataSet[0].ID.Hex(), "")
+	r.ServeHTTP(rr, req)
+	if rr.Code != http.StatusNoContent {
+		t.Fatalf("Unexpected status code %d", rr.Code)
+	}
+
+	data := Category{}
+	if err := c.FindId(dataSet[0].ID).One(&data); err != mgo.ErrNotFound {
+		t.Fatalf("Dataset still present: %s", err)
+	}
+}
+
+func insertCategoryTestData(c *mgo.Collection) []Category {
 	dataSet := []Category{
 		{
 			ID:   bson.NewObjectId(),
@@ -159,26 +153,8 @@ func TestCategoryDeleteHandler(t *testing.T) {
 
 	for _, d := range dataSet {
 		if err := c.Insert(d); err != nil {
-			t.Fatalf("Could not insert test data: %s", err)
+			panic(fmt.Sprintf("Could not insert test data: %s", err))
 		}
 	}
-
-	r := mux.NewRouter()
-	r.HandleFunc("/category/{id}", CategoryDeleteHandler)
-
-	rr := httptest.NewRecorder()
-	req := mustRequest("DELETE", "http://host/category/"+dataSet[0].ID.Hex(), "")
-	r.ServeHTTP(rr, req)
-	if rr.Code != http.StatusNoContent {
-		t.Fatalf("Unexpected status code %d", rr.Code)
-	}
-
-	data := []Category{}
-	if err := c.Find(bson.M{}).All(&data); err != nil {
-		t.Fatalf("Could not get data: %s", err)
-	}
-
-	if !reflect.DeepEqual(data, dataSet[1:]) {
-		t.Fatalf("Unexpected data: %#v", data)
-	}
+	return dataSet
 }
