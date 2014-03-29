@@ -32,27 +32,31 @@ func main() {
 
 	r := mux.NewRouter()
 
-	categoryRouter := r.PathPrefix("/category").Subrouter()
-	categoryRouter.Path("").Methods("GET").HandlerFunc(CategoryListHandler)
-	categoryRouter.Path("").Methods("PUT").HandlerFunc(CategoryCreateHandler)
-	categoryRouter.Path("/{id}").Methods("GET").HandlerFunc(CategoryGetHandler)
-	categoryRouter.Path("/{id}").Methods("PUT").HandlerFunc(CategoryUpdateHandler)
-	categoryRouter.Path("/{id}").Methods("DELETE").HandlerFunc(CategoryDeleteHandler)
-	categoryRouter.Path("/{id}/mails").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.Path("/category").Methods("GET").HandlerFunc(CategoryListHandler)
+	r.Path("/category").Methods("POST").HandlerFunc(CategoryCreateHandler)
+	r.Path("/category/{id}").Methods("GET").HandlerFunc(CategoryGetHandler)
+	r.Path("/category/{id}").Methods("PUT").HandlerFunc(CategoryUpdateHandler)
+	r.Path("/category/{id}").Methods("DELETE").HandlerFunc(CategoryDeleteHandler)
+	r.Path("/category/{id}/mails").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = "/mail"
 		r.URL.RawQuery = "?filter=category:" + mux.Vars(r)["id"]
 		http.Redirect(w, r, r.URL.String(), http.StatusTemporaryRedirect)
 	})
 
-	mailRouter := r.PathPrefix("/mail").Subrouter()
-	mailRouter.Path("").Methods("GET").HandlerFunc(MailListHandler)
-	mailRouter.Path("").Methods("PUT").HandlerFunc(MailCreateHandler)
-	mailRouter.Path("/{id}").Methods("GET").HandlerFunc(MailGetHandler)
-	mailRouter.Path("/{id}").Methods("PUT").HandlerFunc(MailUpdateHandler)
-	mailRouter.Path("/{id}").Methods("DELETE").HandlerFunc(CategoryDeleteHandler)
+	r.Path("/mail").Methods("GET").HandlerFunc(MailListHandler)
+	r.Path("/mail").Methods("POST").HandlerFunc(MailCreateHandler)
+	r.Path("/mail/{id}").Methods("GET").HandlerFunc(MailGetHandler)
+	r.Path("/mail/{id}").Methods("PUT").HandlerFunc(MailUpdateHandler)
+	r.Path("/mail/{id}").Methods("DELETE").HandlerFunc(CategoryDeleteHandler)
+
+	injectHostname := func(w http.ResponseWriter, req *http.Request) {
+		req.URL.Host = req.Host
+		req.URL.Scheme = "http"
+		r.ServeHTTP(w, req)
+	}
 
 	log.Printf("Starting webserver on %s...", options.Listen)
-	if err := http.ListenAndServe(options.Listen, nil); err != nil {
+	if err := http.ListenAndServe(options.Listen, http.HandlerFunc(injectHostname)); err != nil {
 		log.Fatalf("Could not start webserver: %s", err)
 	}
 }

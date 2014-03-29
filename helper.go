@@ -20,7 +20,7 @@ func FilterIter(c *mgo.Collection, r *http.Request) (iter *mgo.Iter, offset, cou
 		}
 		query[fields[0]] = fields[1]
 	}
-	qry := db.C(CATEGORY_COLLECTION).Find(query)
+	qry := c.Find(query)
 	count, err = qry.Count()
 	if err != nil {
 		return nil, 0, 0, err

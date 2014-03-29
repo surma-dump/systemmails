@@ -35,34 +35,42 @@ func TestMailCreateHandler(t *testing.T) {
 		t.Fatalf("Could not unmarshal response: %s", err)
 	}
 
-	newMail := Mail{}
-	if err := c.Find(bson.M{}).One(&newMail); err != nil {
+	dbMail := Mail{}
+	if err := c.Find(bson.M{}).One(&dbMail); err != nil {
 		t.Fatalf("Could not get new mail from DB: %s", err)
 	}
 
-	if time.Now().Sub(newMail.Ctime) > 500*time.Millisecond {
-		t.Fatalf("CTime is to far in the past: %s", newMail.Ctime)
+	if time.Now().Sub(dbMail.Ctime) > 500*time.Millisecond {
+		t.Fatalf("CTime is to far in the past: %s", dbMail.Ctime)
 	}
-	if time.Now().Sub(newMail.Mtime) > 500*time.Millisecond {
-		t.Fatalf("MTime is to far in the past: %s", newMail.Ctime)
+	if time.Now().Sub(dbMail.Mtime) > 500*time.Millisecond {
+		t.Fatalf("MTime is to far in the past: %s", dbMail.Ctime)
 	}
-	if newMail.Status != "active" {
-		t.Fatalf("Unexpected status: %s", newMail.Status)
+	if dbMail.Status != "active" {
+		t.Fatalf("Unexpected status: %s", dbMail.Status)
 	}
-	if newMail.Name != "Name 0" {
-		t.Fatalf("Unexpected name: %s", newMail.Name)
+	if dbMail.Name != "Name 0" {
+		t.Fatalf("Unexpected name: %s", dbMail.Name)
 	}
-	if newMail.Subject != "Some Subject" {
-		t.Fatalf("Unexpected name: %s", newMail.Subject)
+	if dbMail.Subject != "Some Subject" {
+		t.Fatalf("Unexpected name: %s", dbMail.Subject)
 	}
-	if newMail.Body != "Some Body" {
-		t.Fatalf("Unexpected name: %s", newMail.Body)
+	if dbMail.Body != "Some Body" {
+		t.Fatalf("Unexpected name: %s", dbMail.Body)
 	}
-	if !reflect.DeepEqual(newMail.Category, []string{"tag1", "tag2"}) {
-		t.Fatalf("Unexpected categories %#v", newMail.Category)
+	if !reflect.DeepEqual(dbMail.Category, []string{"tag1", "tag2"}) {
+		t.Fatalf("Unexpected categories %#v", dbMail.Category)
 	}
 
-	expectedURL := "http://host/mail/" + newMail.ID.Hex()
+	newMail := Mail{}
+	if err := jsonRemarshal(&newMail, resp); err != nil {
+		t.Fatalf("Could not analyze response: %s", err)
+	}
+	if !reflect.DeepEqual(newMail, dbMail) {
+		t.Fatalf("Unexpected response:\n%#v\n%#v", newMail, dbMail)
+	}
+
+	expectedURL := "http://host/mail/" + dbMail.ID.Hex()
 	if loc := rr.Header().Get("Location"); loc != expectedURL {
 		t.Fatalf("Unexpected Location header %s", loc)
 	}

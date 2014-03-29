@@ -61,8 +61,8 @@ func MailCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	payload.ID = bson.NewObjectId()
 	payload.Author = ""
-	payload.Ctime = time.Now()
-	payload.Mtime = time.Now()
+	payload.Ctime = time.Now().Round(time.Millisecond)
+	payload.Mtime = time.Now().Round(time.Millisecond)
 	payload.Status = "active"
 
 	if err := db.C(MAIL_COLLECTION).Insert(payload); err != nil {
@@ -76,11 +76,11 @@ func MailCreateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Location", r.URL.String())
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(bson.M{
-		"_id":  payload.ID,
-		"name": payload.Name,
-		"url":  r.URL.String(),
-	})
+	rawPayload := bson.M{}
+	jsonRemarshal(&rawPayload, payload)
+	rawPayload["url"] = r.URL.String()
+	rawPayload["_id"] = payload.ID
+	json.NewEncoder(w).Encode(rawPayload)
 }
 
 func MailGetHandler(w http.ResponseWriter, r *http.Request) {

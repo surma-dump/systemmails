@@ -14,7 +14,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	db = session.DB("")
+	db = session.DB("systemmails-test")
 }
 
 type test struct {
@@ -24,7 +24,7 @@ type test struct {
 }
 
 func TestFilterIter_Data(t *testing.T) {
-	c := db.C(CATEGORY_COLLECTION)
+	c := db.C("someCollection")
 	defer c.DropCollection()
 	dataSet := insertHelperTestData(c)
 
@@ -49,7 +49,7 @@ func TestFilterIter_Data(t *testing.T) {
 }
 
 func TestFilterIter_Limit(t *testing.T) {
-	c := db.C(CATEGORY_COLLECTION)
+	c := db.C("someCollection")
 	defer c.DropCollection()
 	dataSet := insertHelperTestData(c)
 
@@ -74,7 +74,7 @@ func TestFilterIter_Limit(t *testing.T) {
 }
 
 func TestFilterIter_Skip(t *testing.T) {
-	c := db.C(CATEGORY_COLLECTION)
+	c := db.C("someCollection")
 	defer c.DropCollection()
 	dataSet := insertHelperTestData(c)
 
@@ -99,7 +99,7 @@ func TestFilterIter_Skip(t *testing.T) {
 }
 
 func TestFilterIter_Filter(t *testing.T) {
-	c := db.C(CATEGORY_COLLECTION)
+	c := db.C("someCollection")
 	defer c.DropCollection()
 	dataSet := insertHelperTestData(c)
 
