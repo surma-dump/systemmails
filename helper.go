@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -48,4 +49,12 @@ func mustRequest(method, urlStr, body string) *http.Request {
 		panic(err)
 	}
 	return r
+}
+
+func jsonRemarshal(new interface{}, old interface{}) error {
+	data, err := json.Marshal(old)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, new)
 }

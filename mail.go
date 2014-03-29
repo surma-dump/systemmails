@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	// "github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"time"
@@ -16,15 +16,15 @@ const (
 )
 
 type Mail struct {
-	ID       bson.ObjectId `bson:"_id,omitempty"    json:"_id,omitempty"`
-	Name     string        `bson:"name"             json:"name"`
-	Category []string      `bson:"category"         json:"category"`
+	ID       bson.ObjectId `bson:"_id,omitempty" json:"_id,omitempty"`
+	Name     string        `bson:"name" json:"name"`
+	Category []string      `bson:"category" json:"category"`
 	Author   string        `bson:"author,omitempty" json:"author,omitempty"`
-	Ctime    time.Time     `bson:"ctime,omitempty"  json:"ctime,omitempty"`
-	Mtime    time.Time     `bson:"mtime,omitempty"  json:"mtime,omitempty"`
+	Ctime    time.Time     `bson:"ctime,omitempty" json:"ctime,omitempty"`
+	Mtime    time.Time     `bson:"mtime,omitempty" json:"mtime,omitempty"`
 	Status   string        `bson:"status,omitempty" json:"status,omitempty"`
-	Subject  interface{}   `bson:"subject"          json:"subject"`
-	Body     interface{}   `bson:"body"             json:"body"`
+	Subject  interface{}   `bson:"subject" json:"subject"`
+	Body     interface{}   `bson:"body" json:"body"`
 }
 
 func MailListHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,18 +49,21 @@ func MailListHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-/*
 func MailCreateHandler(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	payload := Category{}
+	payload := Mail{}
 	if err := dec.Decode(&payload); err != nil {
 		http.Error(w, "Bad Request (invalid payload)", http.StatusBadRequest)
 		return
 	}
 
 	payload.ID = bson.NewObjectId()
+	payload.Author = ""
+	payload.Ctime = time.Now()
+	payload.Mtime = time.Now()
+	payload.Status = "active"
 
 	if err := db.C(MAIL_COLLECTION).Insert(payload); err != nil {
 		log.Printf("Could not insert value: %s", err)
@@ -68,9 +71,11 @@ func MailCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
 	r.URL.Path += "/" + payload.ID.Hex()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Location", r.URL.String())
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(bson.M{
 		"_id":  payload.ID,
 		"name": payload.Name,
@@ -80,7 +85,7 @@ func MailCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 func MailGetHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	result := Category{}
+	result := Mail{}
 	if err := db.C(MAIL_COLLECTION).FindId(bson.ObjectIdHex(id)).One(&result); err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
@@ -120,4 +125,3 @@ func MailDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Error(w, "", http.StatusNoContent)
 }
-*/

@@ -54,6 +54,9 @@ func TestCategoryCreateHandler(t *testing.T) {
 	if !reflect.DeepEqual(data, expectedData) {
 		t.Fatalf("Unexpected data %#v", data)
 	}
+	if loc := rr.Header().Get("Location"); loc != expectedData["url"] {
+		t.Fatalf("Unexpected Location header %s", loc)
+	}
 }
 
 func TestCategoryGetHandler(t *testing.T) {

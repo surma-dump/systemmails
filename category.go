@@ -58,10 +58,11 @@ func CategoryCreateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error (could not insert value)", http.StatusInternalServerError)
 		return
 	}
+	r.URL.Path += "/" + payload.ID.Hex()
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Location", r.URL.String())
 	w.WriteHeader(http.StatusCreated)
-	r.URL.Path += "/" + payload.ID.Hex()
 	json.NewEncoder(w).Encode(bson.M{
 		"_id":  payload.ID,
 		"name": payload.Name,

@@ -26,7 +26,7 @@ type test struct {
 func TestFilterIter_Data(t *testing.T) {
 	c := db.C(CATEGORY_COLLECTION)
 	defer c.DropCollection()
-	dataSet := insertTestData(c)
+	dataSet := insertHelperTestData(c)
 
 	iter, offset, count, err := FilterIter(c, mustRequest("GET", "/", ""))
 	if err != nil {
@@ -51,7 +51,7 @@ func TestFilterIter_Data(t *testing.T) {
 func TestFilterIter_Limit(t *testing.T) {
 	c := db.C(CATEGORY_COLLECTION)
 	defer c.DropCollection()
-	dataSet := insertTestData(c)
+	dataSet := insertHelperTestData(c)
 
 	iter, offset, count, err := FilterIter(c, mustRequest("GET", "/?limit=2", ""))
 	if err != nil {
@@ -76,7 +76,7 @@ func TestFilterIter_Limit(t *testing.T) {
 func TestFilterIter_Skip(t *testing.T) {
 	c := db.C(CATEGORY_COLLECTION)
 	defer c.DropCollection()
-	dataSet := insertTestData(c)
+	dataSet := insertHelperTestData(c)
 
 	iter, offset, count, err := FilterIter(c, mustRequest("GET", "/?skip=1", ""))
 	if err != nil {
@@ -101,7 +101,7 @@ func TestFilterIter_Skip(t *testing.T) {
 func TestFilterIter_Filter(t *testing.T) {
 	c := db.C(CATEGORY_COLLECTION)
 	defer c.DropCollection()
-	dataSet := insertTestData(c)
+	dataSet := insertHelperTestData(c)
 
 	iter, offset, count, err := FilterIter(c, mustRequest("GET", "/?filter=tags:tag3", ""))
 	if err != nil {
@@ -123,7 +123,7 @@ func TestFilterIter_Filter(t *testing.T) {
 	}
 }
 
-func insertTestData(c *mgo.Collection) []test {
+func insertHelperTestData(c *mgo.Collection) []test {
 	dataSet := []test{
 		{
 			ID:   bson.NewObjectId(),
